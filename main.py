@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/19 16:39:00 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/23 18:49:01 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/23 21:33:01 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ def __main__() -> int:
         ope.print()
     except BaseException as exeption :
         print(f"Error : {exeption.args[0]} ")
-        # o = 1/0
+        o = 1/0
         return 1
     return 0
 

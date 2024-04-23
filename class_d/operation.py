@@ -6,28 +6,11 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/23 20:07:05 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/23 21:33:37 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-def power(flt1, flt2) -> float:
-    result = flt1
-    if flt2 == 0 :
-        return 1
-    if flt2 == 1 :
-        return flt1
-    for i in range(int(flt2)):
-        result *= flt1
-    return result
-
-def sqrt(n):
-    i = 0
-    result = 1
-    while i < 50:
-        result = (result + (n / result)) / 2
-        i+=1
-    return result
-    
+from mathFunction import power
 
 def parseValueOperation(str):
     i = 0
@@ -52,6 +35,31 @@ def parseValueOperation(str):
             raise BaseException(f"'{str}' cannot be variable name.")
     return result
 
+def addMultToOperation(ope, mult):
+        while ope != None :
+            if ope.operator == "^":
+                if ope.right != None and ope.right.right != None :
+                    ope = ope.right.right
+            elif type(ope.left) == float :
+                ope.left *= mult
+                while ope != None  and ope.operator != None and ope.operator in "*/" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            else :
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = mult
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            ope = ope.right
+        return "Done"
 
 class operation:
     
@@ -59,6 +67,8 @@ class operation:
         this.left = None
         this.operator = None
         this.right = None
+        if len(str) == 0:
+            return
         print(f"Need to parse {str}")
         i = 0
         try :
@@ -102,6 +112,7 @@ class operation:
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndNumber()
+        this.selfOptiNumberAndOperation()
             
     def selfOptiNumberAndOperation(this):
         # TODO : finish function
@@ -114,7 +125,7 @@ class operation:
                 # print(f"Enter other branch {opera.left}")
                 modifNb += opera.left.selfOptiNumberAndOperation()
                 # print("Exit other branch")
-            elif (type(opera.left) == float and opera.right != None and type(opera.right.left) == operation) or (type(opera.left) == operation and opera.right != None and type(opera.right.left) == float):
+            if (type(opera.left) == float and opera.right != None and type(opera.right.left) == operation) or (type(opera.left) == operation and opera.right != None and type(opera.right.left) == float):
                 # print(f"try for {opera.left} {opera.operator} {opera.right.left}")
                 if type(opera.left) == float:
                     nb = opera.left
@@ -123,7 +134,7 @@ class operation:
                     nb = opera.right.left
                     ope = opera.left
                 if opera.operator == "*" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
-                    result = opera.left * opera.right.left
+                    result = addMultToOperation(ope, nb)
                 # elif opera.operator == "/" and opera.right.left == 0.0 and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
                 #     raise BaseException("can't divise by 0.")
                 # elif opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
@@ -135,7 +146,7 @@ class operation:
                     # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
                     opera.operator = opera.right.operator
                     opera.right = opera.right.right
-                    opera.left = result
+                    opera.left = ope
                     modifNb += 1
             if opera.operator != None and opera.operator == "^":
                 degre = 2
@@ -143,10 +154,11 @@ class operation:
                 degre = 1
             else :
                 degre = 0
+            opera = opera.right
         return modifNb
 
         
-    def selfOptiNormalNumber(this):
+    def selfOptiNumberAndNumber(this):
         opera = this
         degre = 0
         modifNb = 0
