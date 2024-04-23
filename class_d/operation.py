@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/23 16:29:40 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/23 16:32:20 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -78,20 +78,6 @@ class operation:
                 this.left = parseValueOperation(str)
         except BaseException as exeption :
             raise exeption
-        # this.checKVariableAndValue()
-        
-    def checKVariableAndValue(this):
-        opera = this
-        if type(this.left) == operation:
-            this.left.checKVariableAndValue()
-        elif type(this.left) != float :
-            this.left = parseValueOperation(this.left)
-        while opera.right != None :
-            opera = opera.right
-            if type(opera.left) == operation:
-                opera.left.checKVariableAndValue()
-            elif type(opera.left) != float :
-                opera.left = parseValueOperation(opera.left)
                 
     def selfOpti(this):
         return
