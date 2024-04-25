@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/25 17:38:12 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/25 17:42:59 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -76,7 +76,6 @@ def addMultToOperation(ope, mult):
         return "Done"
     
 def addVMultToOperation(ope, mult, isReverse):
-        # TODO : finish function 
         isPower = False
         while ope != None :
             if ope.operator == "^" and not isReverse:
@@ -139,6 +138,7 @@ def addVMultToOperation(ope, mult, isReverse):
 class operation:
     
     def __init__(this, str) -> None:
+        # TODO : CAN HAVE NEGATIVE NUMBER IN ENTRANCE
         this.left = None
         this.operator = None
         this.right = None
@@ -184,6 +184,7 @@ class operation:
             raise exeption
         
     def opti(this):
+        # TODO : upgrade this
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndNumber()
@@ -194,7 +195,14 @@ class operation:
             nbModif += this.selfOptiVariableAndOperation()
             print(this)
             
-            
+    def destroyParenthese(this):
+        #TODO : create this function
+        return
+    
+    def simplify(this):
+        #TODO : create this function
+        return
+         
     def selfOptiVariableAndOperation(this):
         opera = this
         degre = 0
