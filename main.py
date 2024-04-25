@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/19 16:39:00 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/23 21:33:01 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/25 13:29:21 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,10 +20,10 @@ def __main__() -> int:
             raise (BaseException("Wrong number of argument."))
         #TODO separer les 2 entré en temps que 2 partire de l'équation
         ope = operation(sys.argv[1])
-        ope.print()
+        print(ope)
         ope.opti()
         print("__________________________________________")
-        ope.print()
+        print(ope)
     except BaseException as exeption :
         print(f"Error : {exeption.args[0]} ")
         o = 1/0

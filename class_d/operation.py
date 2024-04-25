@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/23 21:33:37 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/25 16:13:36 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,13 +36,26 @@ def parseValueOperation(str):
     return result
 
 def addMultToOperation(ope, mult):
+        isPower = False
         while ope != None :
             if ope.operator == "^":
-                if ope.right != None and ope.right.right != None :
-                    ope = ope.right.right
+                isPower = True
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = mult
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            elif isPower :
+                isPower = False
             elif type(ope.left) == float :
                 ope.left *= mult
-                while ope != None  and ope.operator != None and ope.operator in "*/" :
+                while ope != None  and ope.operator != None and ope.operator in "*/^" :
                     ope = ope.right
                 if ope == None :
                     return "Done"
@@ -54,13 +67,60 @@ def addMultToOperation(ope, mult):
                 ope.operator = "*"
                 newOpe.right = ope.right
                 ope.right = newOpe
-                while ope != None and ope.operator != None  and ope.operator in "*/" :
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
                     ope = ope.right
                 if ope == None :
                     return "Done"
-            ope = ope.right
+            if ope.operator != "^":
+                ope = ope.right
         return "Done"
-
+    
+def addVMultToOperation(ope, mult, isReverse):
+        # TODO : finish function 
+        isPower = False
+        while ope != None :
+            if ope.operator == "^":
+                isPower = True
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = mult
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            elif isPower :
+                isPower = False
+            elif isReverse :
+                newOpe = operation(mult + "*" + mult)
+                newOpe.right.left = ope.left
+                ope.left = 1
+                newOpe.right.operator = ope.operator
+                ope.operator = "/"
+                newOpe.right.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            else :
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = mult
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            if ope.operator != "^":
+                ope = ope.right
+        return "Done"
 class operation:
     
     def __init__(this, str) -> None:
@@ -69,7 +129,7 @@ class operation:
         this.right = None
         if len(str) == 0:
             return
-        print(f"Need to parse {str}")
+        # print(f"Need to parse {str}")
         i = 0
         try :
             save = -1
@@ -87,7 +147,7 @@ class operation:
                         count -=1
                     i+=1
                 if (count != 0):
-                    raise BaseException(f"No end to paranthese init at {save} index")
+                    raise BaseException(f"No end to paranthese init at {save} index of {str} string")
                 else :
                     this.left = operation(str[save + 1 : i - 1])
             while i < len(str):
@@ -99,9 +159,9 @@ class operation:
                         this.right = operation(str[i + 1:])
                         break
                     else :
-                        raise BaseException(f"Unknow caracter '{str[i]}' at {i} index")
+                        raise BaseException(f"Unknow caracter '{str[i]}' at {i} index of {str} string")
                 elif save != -1 and str[i] != " ":
-                    raise BaseException(f"Need Operator at {i} index (find '{str[i]}')")
+                    raise BaseException(f"Need Operator at {i} index of {str} string (find '{str[i]}')")
                 i+=1
             if this.left == None:
                 this.left = parseValueOperation(str)
@@ -112,10 +172,51 @@ class operation:
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndNumber()
-        this.selfOptiNumberAndOperation()
+        nbModif = 42
+        while nbModif > 0:
+            nbModif = this.selfOptiNumberAndOperation()
+            nbModif += this.selfOptiVariableAndOperation()
+            
+    def selfOptiVariableAndOperation(this):
+        opera = this
+        degre = 0
+        modifNb = 0
+        while opera != None :
+            result = None
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.selfOptiVariableAndOperation()
+                # print("Exit other branch")
+            if (type(opera.left) == str and opera.right != None and type(opera.right.left) == operation) or (type(opera.left) == operation and opera.right != None and type(opera.right.left) == str):
+                # print(f"try for {opera.left} {opera.operator} {opera.right.left}")
+                if type(opera.left) == str:
+                    nb = opera.left
+                    ope = opera.right.left
+                else :
+                    nb = opera.right.left
+                    ope = opera.left
+                if opera.operator == "*" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    result = addVMultToOperation(ope, nb, False)
+                elif type(opera.right.left) == str and opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    result = addVMultToOperation(ope,nb, True)
+
+                if result != None :
+                    # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
+                    opera.operator = opera.right.operator
+                    opera.right = opera.right.right
+                    opera.left = ope
+                    modifNb += 1
+            if opera.operator != None and opera.operator == "^":
+                degre = 2
+            elif opera.operator != None and opera.operator in "/*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
+        return modifNb
             
     def selfOptiNumberAndOperation(this):
-        # TODO : finish function
+        # TODO : finish function : ^
         opera = this
         degre = 0
         modifNb = 0
@@ -135,10 +236,10 @@ class operation:
                     ope = opera.left
                 if opera.operator == "*" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
                     result = addMultToOperation(ope, nb)
-                # elif opera.operator == "/" and opera.right.left == 0.0 and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
-                #     raise BaseException("can't divise by 0.")
-                # elif opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
-                #     result = opera.left / opera.right.left
+                elif type(opera.right.left) == float and opera.operator == "/" and opera.right.left == 0.0 and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    raise BaseException("can't divise by 0.")
+                elif type(opera.right.left) == float and opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    result = addMultToOperation(ope, 1 / nb)
 
                 # elif opera.operator == "^":
                 #     result = power(opera.left, opera.right.left)
@@ -199,26 +300,37 @@ class operation:
             if result == None :
                 opera = opera.right
         return modifNb
-    
-    def print(this):
-        opera = this
-        print(f"{opera.left}   {opera.operator}")
-        while opera.right != None :
-            opera = opera.right
-            if (opera.operator != None) :
-                print(f"{opera.left}   {opera.operator}")
-            else :
-                print(f"{opera.left}")
             
     def __repr__(this):
-        if this.operator == None :
-            str = f"{this.left}"
-        else :
-            str = f"({this.left} {this.operator} {this.right})"
-        return str
+        returnValue = ""
+        opera = this
+        while opera != None :
+            if (opera.operator != None) :
+                if type(opera.left) == operation:
+                    returnValue += f"({opera.left}) {opera.operator} "
+                else :
+                    returnValue += f"{opera.left} {opera.operator} "  
+            else :
+                if type(opera.left) == operation:
+                    returnValue += f"({opera.left})"
+                else :
+                    returnValue += f"{opera.left}"
+            opera = opera.right 
+        return returnValue
+
     def __str__(this):
-        if this.operator == None :
-            str = f"{this.left}"
-        else :
-            str = f"({this.left} {this.operator} {this.right})"
-        return str
+        returnValue = ""
+        opera = this
+        while opera != None :
+            if (opera.operator != None) :
+                if type(opera.left) == operation:
+                    returnValue += f"({opera.left}) {opera.operator} "
+                else :
+                    returnValue += f"{opera.left} {opera.operator} "  
+            else :
+                if type(opera.left) == operation:
+                    returnValue += f"({opera.left})"
+                else :
+                    returnValue += f"{opera.left}"
+            opera = opera.right 
+        return returnValue
