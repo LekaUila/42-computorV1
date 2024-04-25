@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/25 16:13:36 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/25 17:38:12 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -79,7 +79,7 @@ def addVMultToOperation(ope, mult, isReverse):
         # TODO : finish function 
         isPower = False
         while ope != None :
-            if ope.operator == "^":
+            if ope.operator == "^" and not isReverse:
                 isPower = True
                 newOpe = operation("")
                 newOpe.left = ope.left
@@ -95,18 +95,32 @@ def addVMultToOperation(ope, mult, isReverse):
             elif isPower :
                 isPower = False
             elif isReverse :
-                newOpe = operation(mult + "*" + mult)
-                newOpe.right.left = ope.left
-                ope.left = 1
-                newOpe.right.operator = ope.operator
-                ope.operator = "/"
-                newOpe.right.right = ope.right
-                ope.right = newOpe
-                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                while ope.right != None and ope.operator != None  and ope.operator in "*/^" :
                     ope = ope.right
+                print(f"for {ope} : test for {ope.left} {ope.operator} {ope.right}")
+                newOpe = operation("")
+                newOpe.left = mult
+                newOpe.operator = ope.operator
+                ope.operator = "/"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                print(f"result {ope} ")
+                ope = ope.right
                 if ope == None :
                     return "Done"
+                # newOpe = operation(mult + "*" + mult)
+                # newOpe.right.left = ope.left
+                # ope.left = 1
+                # newOpe.right.operator = ope.operator
+                # ope.operator = "/"
+                # newOpe.right.right = ope.right
+                # ope.right = newOpe
+                # while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                #     ope = ope.right
+                # if ope == None :
+                #     return "Done"
             else :
+                print(f"for {ope} : test for {ope.left} {ope.operator} {ope.right}")
                 newOpe = operation("")
                 newOpe.left = ope.left
                 ope.left = mult
@@ -114,6 +128,7 @@ def addVMultToOperation(ope, mult, isReverse):
                 ope.operator = "*"
                 newOpe.right = ope.right
                 ope.right = newOpe
+                print(f"result {ope} ")
                 while ope != None and ope.operator != None  and ope.operator in "*/^" :
                     ope = ope.right
                 if ope == None :
@@ -172,10 +187,13 @@ class operation:
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndNumber()
+            print(this)
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndOperation()
             nbModif += this.selfOptiVariableAndOperation()
+            print(this)
+            
             
     def selfOptiVariableAndOperation(this):
         opera = this
