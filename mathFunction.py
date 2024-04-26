@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 20:35:34 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 16:55:51 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/26 20:31:03 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,6 +38,4 @@ def sqrt(n):
     return result
 
 def abs(flt):
-    if flt < 0 :
-        return flt *-1
-    return flt
+    return flt *-1 if flt < 0 else flt

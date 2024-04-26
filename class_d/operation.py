@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 18:25:56 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/26 20:23:08 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ def parseValueOperation(str):
     else :
         save = i
         while i < len(str) and str[i] != ' ' :
-            if str[i] not in "azertyuiopqsdfghjklmwxcvbn_":
+            if str[i] not in "azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN_":
                 raise BaseException(f"'{str[i]}' cannot be a caracter for variable name.")
             i+= 1
         result = str[save : i]
@@ -109,17 +109,6 @@ def addVMultToOperation(ope, mult, isReverse):
                 ope = ope.right
                 if ope == None :
                     return "Done"
-                # newOpe = operation(mult + "*" + mult)
-                # newOpe.right.left = ope.left
-                # ope.left = 1
-                # newOpe.right.operator = ope.operator
-                # ope.operator = "/"
-                # newOpe.right.right = ope.right
-                # ope.right = newOpe
-                # while ope != None and ope.operator != None  and ope.operator in "*/^" :
-                #     ope = ope.right
-                # if ope == None :
-                #     return "Done"
             else :
                 # print(f"for {ope} : test for {ope.left} {ope.operator} {ope.right}")
                 newOpe = operation("")
@@ -137,7 +126,57 @@ def addVMultToOperation(ope, mult, isReverse):
             if ope.operator != "^":
                 ope = ope.right
         return "Done"
-    
+
+def addOMultToOperation(ope, mult, isReverse):
+        isPower = False
+        # print("enter")
+        while ope != None :
+            if ope.operator == "^" and not isReverse:
+                isPower = True
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = operation(mult.__str__())
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            elif isPower :
+                isPower = False
+            elif isReverse :
+                while ope.right != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                # print(f"for {ope} : test for {ope.left} {ope.operator} {ope.right}")
+                newOpe = operation("")
+                newOpe.left = operation(mult.__str__())
+                newOpe.operator = ope.operator
+                ope.operator = "/"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                # print(f"result {ope} ")
+                ope = ope.right
+                if ope == None :
+                    return "Done"
+            else :
+                # print(f"for {ope} : test for {ope.left} {ope.operator} {ope.right}")
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = operation(mult.__str__())
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                # print(f"result {ope} ")
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return "Done"
+            if ope.operator != "^":
+                ope = ope.right
+        return "Done"
 
 class operation:
     
@@ -172,7 +211,7 @@ class operation:
                         raise BaseException(f"Need a value at {save + 1} index of '{str}' string")
             hasValueExistent = False
             while i < len(str):
-                if str[i] not in " 0123456789.abcdefghijclmnopqrstuvwxyz_":
+                if str[i] not in " 0123456789.abcdefghijclmnopqrstuvwxyzAZERTYUIOPQSDFGHJKLMWXCVBN_":
                     if str[i] in "+-*/^":
                         if not(hasValueExistent) and str[i] == "-" :
                             hasValueExistent = True
@@ -196,7 +235,12 @@ class operation:
                 this.left = parseValueOperation(str)
         except BaseException as exeption :
             raise exeption
-        
+
+    def __eq__(this, other):
+        if other == None:
+            return False
+        return (type(this.left) == type(other.left) and this.left == other.left and this.operator == other.operator and type(this.right) == type(other.right) and this.right == other.right)
+    
     def opti(this):
         # TODO : upgrade this
         nbModif = 42
@@ -207,9 +251,20 @@ class operation:
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndOperation()
             nbModif += this.selfOptiVariableAndOperation()
-        this.destroyParenthese()
+            nbModif += this.selfOptiOperationAndOperation()
+            nbModif += this.destroyParenthese()
             
             # print(this)
+    def checkVariableForEquation(this):
+        if type(this.left) == str and this.left !="X":
+            raise BaseException(f"The only variable name autorised for this equation is 'X' ('{this.left}' is not valable)")
+        elif type(this.left) == operation and this.right != None:
+            this.left.checkVariableForEquation() and this.right.checkVariableForEquation()
+        elif type(this.left) == operation :
+            this.left.checkVariableForEquation()
+        elif this.right != None :
+            this.right.checkVariableForEquation()
+            
             
     def destroyParenthese(this):
         while (type(this.left) == operation and this.operator == None):
@@ -218,6 +273,16 @@ class operation:
             this.left = this.left.left
         opera = this
         modifNb = 0
+        if (opera.right != None and type(opera.left) == operation and opera.operator in "-+"):
+            modifNb += 1
+            child = opera.left
+            while child.right != None :
+                child = child.right
+            child.operator = opera.operator
+            child.right= opera.right
+            opera.right = opera.left.right
+            opera.operator = opera.left.operator
+            opera.left = opera.left.left
         while opera != None :
             if type(opera.left) == operation:
                 # print(f"Enter other branch {opera.left}")
@@ -251,6 +316,40 @@ class operation:
     def simplify(this):
         #TODO : create this function
         return
+    
+    def selfOptiOperationAndOperation(this):
+        opera = this
+        degre = 0
+        modifNb = 0
+        while opera != None :
+            result = None
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.selfOptiOperationAndOperation()
+                # print("Exit other branch")
+            if (type(opera.left) == operation and opera.right != None and type(opera.right.left) == operation):
+                # print(f"try for {opera.left} {opera.operator} {opera.right.left}")
+                if opera.operator == "*" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    result = addOMultToOperation(opera.left, opera.right.left, False)
+                elif type(opera.right.left) == str and opera.operator == "/" and degre < 3 and (opera.right.operator == None or opera.right.operator != "^"):
+                    result = addOMultToOperation(opera.left,opera.right.left, True)
+
+                if result != None :
+                    # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
+                    opera.operator = opera.right.operator
+                    opera.right = opera.right.right
+                    opera.left = opera.left
+                    modifNb += 1
+            if opera.operator != None and opera.operator == "^":
+                degre = 3
+            elif opera.operator != None and opera.operator == "/":
+                degre = 2
+            elif opera.operator != None and opera.operator == "*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
+        return modifNb
          
     def selfOptiVariableAndOperation(this):
         opera = this
