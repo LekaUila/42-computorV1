@@ -6,11 +6,11 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/25 17:42:59 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/26 17:09:11 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-from mathFunction import power
+from mathFunction import power, abs
 
 def parseValueOperation(str):
     i = 0
@@ -135,6 +135,8 @@ def addVMultToOperation(ope, mult, isReverse):
             if ope.operator != "^":
                 ope = ope.right
         return "Done"
+    
+
 class operation:
     
     def __init__(this, str) -> None:
@@ -194,10 +196,44 @@ class operation:
             nbModif = this.selfOptiNumberAndOperation()
             nbModif += this.selfOptiVariableAndOperation()
             print(this)
+        this.destroyParenthese()
             
     def destroyParenthese(this):
-        #TODO : create this function
-        return
+        if (type(this.left) == operation and this.operator == None):
+            this.operator = this.left.operator
+            this.right = this.left.right
+            this.left = this.left.left
+        opera = this
+        modifNb = 0
+        while opera != None :
+            if type(opera.left) == operation:
+                print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.destroyParenthese()
+                print("Exit other branch")
+            if (opera.right != None and type(opera.right.left) == operation and opera.operator in "-+" and (opera.right.operator == None or opera.right.operator in "-+")):
+                modifNb += 1
+                print(f"try type of : {type(opera.right.left)}")
+                if opera.operator == "+" :
+                    child = opera.right.left
+                    while child.right != None :
+                        child = child.right
+                    child.operator = opera.right.operator
+                    child.right= opera.right.right
+                    opera.right = opera.right.left
+                else :
+                    child = opera.right.left
+                    while child.right != None :
+                        if child.operator == "-" :
+                            child.operator = "+"
+                        elif child.operator == "+":
+                            child.operator = "-"
+                        child = child.right
+                    child.operator = opera.right.operator
+                    child.right= opera.right.right
+                    opera.right = opera.right.left
+            opera = opera.right
+        return modifNb
+
     
     def simplify(this):
         #TODO : create this function
@@ -242,7 +278,6 @@ class operation:
         return modifNb
             
     def selfOptiNumberAndOperation(this):
-        # TODO : finish function : ^
         opera = this
         degre = 0
         modifNb = 0
@@ -266,9 +301,10 @@ class operation:
                     raise BaseException("can't divise by 0.")
                 elif type(opera.right.left) == float and opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
                     result = addMultToOperation(ope, 1 / nb)
-
-                # elif opera.operator == "^":
-                #     result = power(opera.left, opera.right.left)
+                elif opera.operator == "^" and type(opera.left) == operation:
+                    opera.left = opera.left.power(opera.right.left)
+                    opera.operator = opera.right.operator
+                    opera.right = opera.right.right
                 if result != None :
                     # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
                     opera.operator = opera.right.operator
@@ -286,6 +322,7 @@ class operation:
 
         
     def selfOptiNumberAndNumber(this):
+        #TODO : coorect bug mult and divi (divi prio on mult)
         opera = this
         degre = 0
         modifNb = 0
@@ -360,3 +397,37 @@ class operation:
                     returnValue += f"{opera.left}"
             opera = opera.right 
         return returnValue
+    
+    def power(this, flt):
+        if (flt - float(int(flt)) != 0.0):
+            print(f"WARNING : find {flt} as exponent (can only have integer exponent) -> {flt} will be considert as {int(flt)}")
+        flt = int(flt)
+        if flt == 1:
+            return operation(this.__str__())
+        if flt == 0:
+            newOpe = operation("")
+            newOpe.left = 1.0
+            return newOpe
+        newOpe = operation("")
+        newOpe.left = operation(this.__str__())
+        OpeEnd = newOpe
+        for i in range(abs(flt) - 1):
+            addingOpe = operation(this.__str__())
+            multOpe = operation("")
+            multOpe.left = addingOpe
+            while OpeEnd.right != None:
+                OpeEnd = OpeEnd.right
+            OpeEnd.operator = "*"
+            OpeEnd.right = multOpe
+        if flt > 0:
+            # print (f"newOpe = {newOpe}")
+            return newOpe
+        opeSpe = operation("")
+        opeSpe.left = 1
+        opeSpe.operator = "/"
+        opeSpe.right = operation("")
+        opeSpe.right.left = newOpe
+        return opeSpe
+            
+            
+        
