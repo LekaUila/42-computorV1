@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 17:57:09 by lflandri         ###   ########.fr        #
+#    Updated: 2024/04/26 18:25:56 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -165,9 +165,11 @@ class operation:
                         count -=1
                     i+=1
                 if (count != 0):
-                    raise BaseException(f"No end to paranthese init at {save} index of {str} string")
+                    raise BaseException(f"No end to paranthese init at {save} index of '{str}' string")
                 else :
                     this.left = operation(str[save + 1 : i - 1])
+                    if this.left.left == None :
+                        raise BaseException(f"Need a value at {save + 1} index of '{str}' string")
             hasValueExistent = False
             while i < len(str):
                 if str[i] not in " 0123456789.abcdefghijclmnopqrstuvwxyz_":
@@ -179,11 +181,13 @@ class operation:
                                 this.left = parseValueOperation(str[0: i])
                             this.operator = str[i]
                             this.right = operation(str[i + 1:])
+                            if this.right.left == None :
+                                raise BaseException(f"Need a value at {i + 1} index of '{str}' string")
                             break
                     else :
-                        raise BaseException(f"Unknow caracter '{str[i]}' at {i} index of {str} string")
+                        raise BaseException(f"Unknow caracter '{str[i]}' at {i} index of '{str}' string")
                 elif save != -1 and str[i] != " ":
-                    raise BaseException(f"Need Operator at {i} index of {str} string (find '{str[i]}')")
+                    raise BaseException(f"Need Operator at {i} index of '{str}' string (find '{str[i]}')")
                 elif str[i] != " " :
                     hasValueExistent = True
                     
