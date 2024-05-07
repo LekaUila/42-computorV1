@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 20:23:08 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/07 18:53:02 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -237,7 +237,7 @@ class operation:
             raise exeption
 
     def __eq__(this, other):
-        if other == None:
+        if other == None or type(other) != operation:
             return False
         return (type(this.left) == type(other.left) and this.left == other.left and this.operator == other.operator and type(this.right) == type(other.right) and this.right == other.right)
     
@@ -245,21 +245,31 @@ class operation:
         # TODO : upgrade this
         nbModif = 42
         while nbModif > 0:
+            nbModif = this.selfOptiSign()
+            print(this)
+        nbModif = 42
+        while nbModif > 0:
             nbModif = this.selfOptiNumberAndNumber()
-            # print(this)
+            print(this)
         nbModif = 42
         while nbModif > 0:
             nbModif = this.selfOptiNumberAndOperation()
+            print(this)
             nbModif += this.selfOptiVariableAndOperation()
+            print(this)
             nbModif += this.selfOptiOperationAndOperation()
+            print(this)
+            nbModif += this.selfOptiNumberAndVariable()
+            print(this)
             nbModif += this.destroyParenthese()
+            print(this)
             
-            # print(this)
     def checkVariableForEquation(this):
         if type(this.left) == str and this.left !="X":
             raise BaseException(f"The only variable name autorised for this equation is 'X' ('{this.left}' is not valable)")
         elif type(this.left) == operation and this.right != None:
-            this.left.checkVariableForEquation() and this.right.checkVariableForEquation()
+            this.left.checkVariableForEquation()
+            this.right.checkVariableForEquation()
         elif type(this.left) == operation :
             this.left.checkVariableForEquation()
         elif this.right != None :
@@ -309,13 +319,168 @@ class operation:
                     child.operator = opera.right.operator
                     child.right= opera.right.right
                     opera.right = opera.right.left
+            elif type(opera.left) == operation and opera.operator == None and opera.left.operator == None :
+                opera.left = opera.left.left
             opera = opera.right
         return modifNb
 
-    
+    def setFormat(this):
+        # TODO : continue this function
+        # set number before x and x before "fraction"
+        opera = this
+        degre = 0
+        modifNb = 0
+        # Regrouping Number between Variable
+        while opera != None :
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.simplify()
+                # print("Exit other branch")
+            if opera.right != None  and (opera.operator == "*" or opera.operator == "/") and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                numberSave = None
+                if type(opera.left) == float:
+                    numberSave = opera
+                while opera != None and opera.right != None  and opera.operator == "*" or opera.operator == "/" and (opera.right.operator == None or opera.right.operator != "^") :
+                    if opera.operator == "/":
+                        opera = opera.right
+                    elif numberSave == None and type(opera.right.left) == float and  opera.right.operator != "/":
+                        numberSave == opera
+                        opera = opera.right
+                    elif type(opera.right.left) == float and  opera.right.operator != "/" :
+                        numberSave.left *= opera.right.left
+                        opera.operator = opera.right.operator
+                        opera.right = opera.right.right
+                        modifNb += 1
+                    else :
+                        opera = opera.right
+            if opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
+                numberSave = None
+                if type(opera.left) == float:
+                    numberSave = opera
+                while opera != None  and opera.operator == "+" and (opera.right.operator == None or opera.right.operator not in "*/^"):
+                    if numberSave == None and type(opera.right.left) == float :
+                        numberSave == opera
+                        opera = opera.right
+                    elif type(opera.right.left) == float :
+                        numberSave.left += opera.right.left
+                        opera.operator = opera.right.operator
+                        opera.right = opera.right.right
+                        modifNb += 1
+                    else :
+                        opera = opera.right
+            if opera.operator != None and opera.operator == "^":
+                degre = 3
+            elif opera.operator != None and opera.operator == "/":
+                 degre = 2
+            elif opera.operator != None and opera.operator == "*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
+        # Ordering Number before Variable
+        
+        return modifNb
+
     def simplify(this):
-        #TODO : create this function
-        return
+        # TODO : continue fonction
+        # simplifie division with factor
+        opera = this
+        degre = 0
+        modifNb = 0
+        while opera != None :
+            result = None
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.simplify()
+                # print("Exit other branch")
+            if opera.right != None and opera.right.left == opera.left and opera.operator == "/" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                result = 1.0
+            elif opera.right != None and  ((type(opera.right.left) == float and opera.right.left == 1.0) or (type(opera.left) == float and opera.left == 1.0)) and opera.operator == "*" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                if type(opera.right.left) == float and opera.right.left == 1.0:
+                   result = opera.left
+                else :
+                    result = opera.right.left
+            if result != None :
+                # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
+                opera.operator = opera.right.operator
+                opera.right = opera.right.right
+                opera.left = result
+                modifNb += 1
+            else :
+                if opera.operator != None and opera.operator == "^":
+                    degre = 3
+                elif opera.operator != None and opera.operator == "/":
+                    degre = 2
+                elif opera.operator != None and opera.operator == "*":
+                    degre = 1
+                else :
+                    degre = 0
+                opera = opera.right
+        return modifNb
+    
+    def selfOptiSign(this):
+        opera = this
+        degre = 0
+        modifNb = 0
+        while opera != None :
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.selfOptiSign()
+                # print("Exit other branch")
+            if (opera.right != None and opera.operator == "-" and type(opera.right.left) == float and (opera.right.operator == None or opera.right.operator not in "/*^")):
+                opera.right.left = -opera.right.left
+                opera.operator = "+"
+                modifNb += 1
+            if opera.operator != None and opera.operator == "^":
+                degre = 3
+            elif opera.operator != None and opera.operator == "/":
+                degre = 2
+            elif opera.operator != None and opera.operator == "*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
+        return modifNb
+   
+    def selfOptiNumberAndVariable(this):
+        opera = this
+        degre = 0
+        modifNb = 0
+        while opera != None :
+            result = None
+            if type(opera.left) == operation:
+                # print(f"Enter other branch {opera.left}")
+                modifNb += opera.left.selfOptiNumberAndVariable()
+                # print("Exit other branch")
+            if (type(opera.left) == str and opera.right != None and type(opera.right.left) == float):
+                # print(f"try for {opera.left} {opera.operator} {opera.right.left}")
+                if opera.operator == "^" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                    if opera.right.left == 0:
+                        result = 1
+                    elif opera.right.left == 1:
+                        result = opera.left
+                    else :
+                        if (opera.right.left - float(int(opera.right.left)) != 0.0):
+                            print(f"WARNING : find {opera.right.left} as exponent (can only have integer exponent) -> {opera.right.left} will be considert as {int(opera.right.left)}")
+                        result = operation(f"{opera.left}" + (str([f"* {opera.left}" for i in range(int(abs(opera.right.left)) - 1)])[1:-1].replace("'", "").replace(",", "")))
+                        if (opera.right.left < 0):
+                            result = operation(f"1 / ({result})")
+                if result != None :
+                    # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
+                    opera.operator = opera.right.operator
+                    opera.right = opera.right.right
+                    opera.left = result
+                    modifNb += 1
+            if opera.operator != None and opera.operator == "^":
+                degre = 3
+            elif opera.operator != None and opera.operator == "/":
+                degre = 2
+            elif opera.operator != None and opera.operator == "*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
+        return modifNb
     
     def selfOptiOperationAndOperation(this):
         opera = this

@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/19 16:39:00 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 20:22:01 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/07 16:50:08 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,12 @@ def __main__() -> int:
         print(ope)
         ope.checkVariableForEquation()
         ope.opti()
+        print("__________________________________________")
+        print(ope)
+        ope.setFormat()
+        print("__________________________________________")
+        print(ope)
+        ope.simplify()
         print("__________________________________________")
         print(ope)
         # TODO : réunir 2 parti équation en 1
