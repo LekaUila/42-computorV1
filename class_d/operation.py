@@ -6,11 +6,13 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/07 18:53:02 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/07 22:39:11 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from mathFunction import power, abs
+# Utils fonction
+
 
 def parseValueOperation(str):
     i = 0
@@ -177,6 +179,34 @@ def addOMultToOperation(ope, mult, isReverse):
             if ope.operator != "^":
                 ope = ope.right
         return "Done"
+    
+def compareToFormatOperation(elt1, elt2):
+    if type(elt1) == float and type(elt2) != float:
+        return False
+    elif type(elt2) == float and type(elt1) != float:
+        return True
+    if type(elt1) == operation and type(elt2) != operation:
+        return False
+    elif type(elt2) == operation and type(elt1) != operation:
+        return True
+    elif type(elt2) == operation and type(elt1) == operation:
+        return elt2.__str__() < elt1.__str__()
+    elif type(elt2) == str and type(elt1) == str:
+        return elt2 < elt1
+    else : return False
+
+
+
+
+
+
+
+
+
+
+
+
+# CLASS DEFINITION
 
 class operation:
     
@@ -326,7 +356,7 @@ class operation:
 
     def setFormat(this):
         # TODO : continue this function
-        # set number before x and x before "fraction"
+        # set number before fraction and fraction before x (mult done, add remening (if x + x : 2 * x))
         opera = this
         degre = 0
         modifNb = 0
@@ -334,7 +364,7 @@ class operation:
         while opera != None :
             if type(opera.left) == operation:
                 # print(f"Enter other branch {opera.left}")
-                modifNb += opera.left.simplify()
+                modifNb += opera.left.setFormat()
                 # print("Exit other branch")
             if opera.right != None  and (opera.operator == "*" or opera.operator == "/") and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
                 numberSave = None
@@ -353,6 +383,10 @@ class operation:
                         modifNb += 1
                     else :
                         opera = opera.right
+                    if type(opera.left) == operation:
+                        print(f"Enter other branch {opera.left}")
+                        modifNb += opera.left.setFormat()
+                        print("Exit other branch")
             if opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
                 numberSave = None
                 if type(opera.left) == float:
@@ -368,6 +402,10 @@ class operation:
                         modifNb += 1
                     else :
                         opera = opera.right
+                    if type(opera.left) == operation:
+                        # print(f"Enter other branch {opera.left}")
+                        modifNb += opera.left.setFormat()
+                        # print("Exit other branch")
             if opera.operator != None and opera.operator == "^":
                 degre = 3
             elif opera.operator != None and opera.operator == "/":
@@ -378,6 +416,44 @@ class operation:
                 degre = 0
             opera = opera.right
         # Ordering Number before Variable
+        opera = this
+        while opera != None :
+            if opera.right != None  and (opera.operator == "*" or opera.operator == "/") and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                start = opera
+                modifHere = 42
+                while modifHere :
+                    modifHere = 0
+                    opera = start
+                    while opera != None and opera.right != None  and opera.operator == "*" and (opera.right.operator == None or opera.right.operator != "^") :
+                        if compareToFormatOperation(opera.left, opera.right.left):
+                            opera.left, opera.right.left = opera.right.left, opera.left
+                            modifNb+=1
+                            modifHere+=1
+                        opera = opera.right
+            # if opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
+            #     numberSave = None
+            #     if type(opera.left) == float:
+            #         numberSave = opera
+            #     while opera != None  and opera.operator == "+" and (opera.right.operator == None or opera.right.operator not in "*/^"):
+            #         if numberSave == None and type(opera.right.left) == float :
+            #             numberSave == opera
+            #             opera = opera.right
+            #         elif type(opera.right.left) == float :
+            #             numberSave.left += opera.right.left
+            #             opera.operator = opera.right.operator
+            #             opera.right = opera.right.right
+            #             modifNb += 1
+            #         else :
+            #             opera = opera.right
+            if opera.operator != None and opera.operator == "^":
+                degre = 3
+            elif opera.operator != None and opera.operator == "/":
+                 degre = 2
+            elif opera.operator != None and opera.operator == "*":
+                degre = 1
+            else :
+                degre = 0
+            opera = opera.right
         
         return modifNb
 
@@ -420,7 +496,6 @@ class operation:
     
     def selfOptiSign(this):
         opera = this
-        degre = 0
         modifNb = 0
         while opera != None :
             if type(opera.left) == operation:
@@ -431,14 +506,6 @@ class operation:
                 opera.right.left = -opera.right.left
                 opera.operator = "+"
                 modifNb += 1
-            if opera.operator != None and opera.operator == "^":
-                degre = 3
-            elif opera.operator != None and opera.operator == "/":
-                degre = 2
-            elif opera.operator != None and opera.operator == "*":
-                degre = 1
-            else :
-                degre = 0
             opera = opera.right
         return modifNb
    
@@ -454,7 +521,7 @@ class operation:
                 # print("Exit other branch")
             if (type(opera.left) == str and opera.right != None and type(opera.right.left) == float):
                 # print(f"try for {opera.left} {opera.operator} {opera.right.left}")
-                if opera.operator == "^" and degre < 2 and (opera.right.operator == None or opera.right.operator != "^"):
+                if opera.operator == "^" and (opera.right.operator == None or opera.right.operator != "^"):
                     if opera.right.left == 0:
                         result = 1
                     elif opera.right.left == 1:
@@ -465,6 +532,12 @@ class operation:
                         result = operation(f"{opera.left}" + (str([f"* {opera.left}" for i in range(int(abs(opera.right.left)) - 1)])[1:-1].replace("'", "").replace(",", "")))
                         if (opera.right.left < 0):
                             result = operation(f"1 / ({result})")
+                elif opera.operator == "/" and degre < 3 and (opera.right.operator == None or opera.right.operator != "^") and opera.right.left == 0:
+                    raise BaseException("can't divise by 0.")
+                elif opera.operator == "/" and degre < 3 and (opera.right.operator == None or opera.right.operator != "^"):
+                    opera.operator = "*"
+                    opera.right.left = 1.0 / opera.right.left
+                    modifNb += 1
                 if result != None :
                     # print(f"opera done for {opera.left} {opera.operator} {opera.right.left}")
                     opera.operator = opera.right.operator
@@ -671,14 +744,16 @@ class operation:
                 if type(opera.left) == operation:
                     returnValue += f"({opera.left}) {opera.operator} "
                 else :
+
                     returnValue += f"{opera.left} {opera.operator} "  
             else :
                 if type(opera.left) == operation:
                     returnValue += f"({opera.left})"
                 else :
                     returnValue += f"{opera.left}"
-            opera = opera.right 
+            opera = opera.right
         return returnValue
+
     
     def power(this, flt):
         if (flt - float(int(flt)) != 0.0):
