@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/07 22:39:11 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/14 18:59:48 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -223,6 +223,7 @@ class operation:
             count = 0
             while i < len(str) and str[i] == ' ':
                 i+=1
+            hasValueExistent = False
             if i < len(str) and str[i] == '(' :
                 save = i
                 count = 1
@@ -237,9 +238,10 @@ class operation:
                     raise BaseException(f"No end to paranthese init at {save} index of '{str}' string")
                 else :
                     this.left = operation(str[save + 1 : i - 1])
+                    hasValueExistent = True
                     if this.left.left == None :
                         raise BaseException(f"Need a value at {save + 1} index of '{str}' string")
-            hasValueExistent = False
+            
             while i < len(str):
                 if str[i] not in " 0123456789.abcdefghijclmnopqrstuvwxyzAZERTYUIOPQSDFGHJKLMWXCVBN_":
                     if str[i] in "+-*/^":
@@ -272,27 +274,36 @@ class operation:
         return (type(this.left) == type(other.left) and this.left == other.left and this.operator == other.operator and type(this.right) == type(other.right) and this.right == other.right)
     
     def opti(this):
-        # TODO : upgrade this
-        nbModif = 42
-        while nbModif > 0:
-            nbModif = this.selfOptiSign()
-            print(this)
-        nbModif = 42
-        while nbModif > 0:
-            nbModif = this.selfOptiNumberAndNumber()
-            print(this)
-        nbModif = 42
-        while nbModif > 0:
-            nbModif = this.selfOptiNumberAndOperation()
-            print(this)
-            nbModif += this.selfOptiVariableAndOperation()
-            print(this)
-            nbModif += this.selfOptiOperationAndOperation()
-            print(this)
-            nbModif += this.selfOptiNumberAndVariable()
-            print(this)
-            nbModif += this.destroyParenthese()
-            print(this)
+        nbGlobalModif = 42
+        while nbGlobalModif > 0:
+            nbGlobalModif = 0
+            nbModif = 42
+            while nbModif > 0:
+                nbModif = this.selfOptiSign()
+                print(f"OS  : {this}")
+                nbGlobalModif += nbModif
+            nbModif = 42
+            while nbModif > 0:
+                nbModif = this.selfOptiNumberAndNumber()
+                print(f"ONaN: {this}")
+                nbGlobalModif += nbModif
+            nbModif = 42
+            while nbModif > 0:
+                nbModif = this.selfOptiNumberAndOperation()
+                print(f"ONaO: {this}")
+                nbModif += this.selfOptiVariableAndOperation()
+                print(f"OVaO: {this}")
+                nbModif += this.selfOptiOperationAndOperation()
+                print(f"OOaO: {this}")
+                nbModif += this.selfOptiNumberAndVariable()
+                print(f"ONaV: {this}")
+                nbModif += this.destroyParenthese()
+                print(f"DP  : {this}")
+                this.setFormat()
+                print(f"SF  : {this}")
+                this.simplify()
+                print(f"SIMP: {this}")
+                nbGlobalModif += nbModif
             
     def checkVariableForEquation(this):
         if type(this.left) == str and this.left !="X":
@@ -355,8 +366,6 @@ class operation:
         return modifNb
 
     def setFormat(this):
-        # TODO : continue this function
-        # set number before fraction and fraction before x (mult done, add remening (if x + x : 2 * x))
         opera = this
         degre = 0
         modifNb = 0
@@ -384,10 +393,10 @@ class operation:
                     else :
                         opera = opera.right
                     if type(opera.left) == operation:
-                        print(f"Enter other branch {opera.left}")
+                        # print(f"Enter other branch {opera.left}")
                         modifNb += opera.left.setFormat()
-                        print("Exit other branch")
-            if opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
+                        # print("Exit other branch")
+            elif opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
                 numberSave = None
                 if type(opera.left) == float:
                     numberSave = opera
@@ -424,27 +433,36 @@ class operation:
                 while modifHere :
                     modifHere = 0
                     opera = start
-                    while opera != None and opera.right != None  and opera.operator == "*" and (opera.right.operator == None or opera.right.operator != "^") :
+                    while opera != None and opera.right != None  and (opera.operator == "*" or opera.operator == "/") and (opera.right.operator == None or opera.right.operator != "^") :
+                        if opera.operator == "/":
+                            if opera.right.operator != None and opera.right.operator == "*" and (opera.right.right.operator == None or opera.right.right.operator != "^") :
+                                tempV = opera.right.right.left
+                                opera.right.right.left = opera.right.left
+                                opera.right.left = tempV
+                                opera.operator = "*"
+                                opera.right.operator = "/"
+                            elif opera.right.operator != None and opera.right.operator == "/" and (opera.right.right.operator == None or opera.right.right.operator != "^") :
+                                opeTemp = opera
+                                while opeTemp != None and opeTemp.right != None  and opeTemp.operator == "/" and (opeTemp.right.operator == None or opeTemp.right.operator != "^"):
+                                    opeTemp = opeTemp.right
+                                if opeTemp.operator == "*":
+                                    opeTemp.operator = "/"
+                                    opera.operator = "*"
+                                    replaceV = opeTemp.right.left
+                                    while opera != opeTemp:
+                                        replaceV, opera.right.left = opera.right.left, replaceV
+                                        opera = opera.right
+                                    replaceV, opera.right.left = opera.right.left, replaceV
+                                else :
+                                    break
+                            else :
+                                break
+                            continue
                         if compareToFormatOperation(opera.left, opera.right.left):
                             opera.left, opera.right.left = opera.right.left, opera.left
                             modifNb+=1
                             modifHere+=1
                         opera = opera.right
-            # if opera.right != None  and opera.operator == "+" and degre < 1 and (opera.right.operator == None or opera.right.operator != "^"):
-            #     numberSave = None
-            #     if type(opera.left) == float:
-            #         numberSave = opera
-            #     while opera != None  and opera.operator == "+" and (opera.right.operator == None or opera.right.operator not in "*/^"):
-            #         if numberSave == None and type(opera.right.left) == float :
-            #             numberSave == opera
-            #             opera = opera.right
-            #         elif type(opera.right.left) == float :
-            #             numberSave.left += opera.right.left
-            #             opera.operator = opera.right.operator
-            #             opera.right = opera.right.right
-            #             modifNb += 1
-            #         else :
-            #             opera = opera.right
             if opera.operator != None and opera.operator == "^":
                 degre = 3
             elif opera.operator != None and opera.operator == "/":
@@ -454,7 +472,6 @@ class operation:
             else :
                 degre = 0
             opera = opera.right
-        
         return modifNb
 
     def simplify(this):
@@ -718,6 +735,53 @@ class operation:
             if result == None :
                 opera = opera.right
         return modifNb
+    
+    def __mul__(this, mult):
+        isPower = False
+        # print("enter")
+        opera = operation(this.__str__())
+        ope = opera
+        while ope != None :
+            if ope.operator == "^":
+                isPower = True
+                newOpe = operation("")
+                newOpe.left = ope.left
+                ope.left = operation(mult.__str__())
+                newOpe.operator = ope.operator
+                ope.operator = "*"
+                newOpe.right = ope.right
+                ope.right = newOpe
+                while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                    ope = ope.right
+                if ope == None :
+                    return opera
+            elif isPower :
+                isPower = False
+            else :
+                if ope.operator == "/" and mult == ope.right.left :
+                    ope.operator = ope.right.operator
+                    ope.right = ope.right.right
+                    while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                        ope = ope.right
+                    if ope == None :
+                        return opera
+                elif ope.right == None or (ope.right.operator == None or ope.right.operator not in "*/^"):
+                    newOpe = operation("")
+                    newOpe.left = operation(mult.__str__())
+                    newOpe.operator = ope.operator
+                    ope.operator = "*"
+                    newOpe.right = ope.right
+                    ope.right = newOpe
+                    while ope != None and ope.operator != None  and ope.operator in "*/^" :
+                        ope = ope.right
+                    if ope == None :
+                        return opera
+            if ope.operator != "^":
+                ope = ope.right
+        return opera
+    
+    def __rmul__(this, other):
+        return this.__mult__(other, this)
             
     def __repr__(this):
         returnValue = ""
@@ -754,6 +818,13 @@ class operation:
             opera = opera.right
         return returnValue
 
+    def hasPower(this):
+        #TODO : create this
+        return
+    
+    def hasDivision(this):
+        #TODO : create this
+        return
     
     def power(this, flt):
         if (flt - float(int(flt)) != 0.0):
