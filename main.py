@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/19 16:39:00 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/17 16:33:30 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/17 17:13:57 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -106,7 +106,7 @@ def __main__() -> int:
                     continueOpti = True
                     ope1 = ope1 * result
                     ope2 = ope2 * result
-        finalOpe = operation(f"{ope1} - {ope2}")
+        finalOpe = operation(f"{ope1} - ({ope2})")
         finalOpe.opti()  
         # print("__________________________________________")
         # print(f"operation : {finalOpe} = 0")
@@ -131,20 +131,20 @@ def __main__() -> int:
                 if type(solutionTest) == str:
                     listValideSolution.append(solutionTest)
                 else :
-                    # try :
+                    try :
                         copyLeft = operation(leftOpe.__str__())
                         copyRight = operation(rightOpe.__str__())
                         copyLeft.replaceVariableBy("X", solutionTest)
                         copyRight.replaceVariableBy("X", solutionTest)
                         copyLeft.opti()
                         copyRight.opti()
-                        if copyLeft == copyRight:
+                        # print(f"try : {copyLeft} == {copyRight}")
+                        if abs(copyLeft.left - copyRight.left) < 0.00000000000001:
                             listValideSolution.append(solutionTest)
                         else :
                             listInvalideSolution.append(solutionTest)
-                    # except :
-                    #     print("error occured")
-                    #     listInvalideSolution.append(solutionTest)
+                    except :
+                        listInvalideSolution.append(solutionTest)
             if (len(listValideSolution) == 0):
                 print("There is no valide solution")
             else :
@@ -169,6 +169,7 @@ def __main__() -> int:
         
         # TODO : resolve équation
     except BaseException as exeption :
+        # lol = 1/0
         print(f"Error : {exeption.args[0]} ")
         return 1
     return 0

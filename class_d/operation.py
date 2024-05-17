@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/17 16:33:19 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/17 17:13:30 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -275,6 +275,7 @@ class operation:
     
     def opti(this):
         nbGlobalModif = 42
+        # print(f"start: {this}")
         while nbGlobalModif > 0:
             nbGlobalModif = 0
             nbModif = 42
@@ -835,7 +836,7 @@ class operation:
         opera = this
         while opera != None :
             if type(opera.left) == operation:
-                opera.left.selfOptiNumberAndNumber()
+                opera.left.replaceVariableBy(V, nb)
             elif type(opera.left) == str and opera.left == V:
                 opera.left = nb
             opera = opera.right
