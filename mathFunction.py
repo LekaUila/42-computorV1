@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 20:35:34 by lflandri          #+#    #+#              #
-#    Updated: 2024/04/26 20:31:03 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/17 15:59:23 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,3 +39,14 @@ def sqrt(n):
 
 def abs(flt):
     return flt *-1 if flt < 0 else flt
+
+def polynomialEquationResolver(a, b, c):
+    d = (b * b) - (4 * a * c)
+    print(f"Discriminant is {d}")
+    if d == 0:
+        return [-b / (2 * a)]
+    elif d > 0 :
+        return [(-b - sqrt(d))/ (2 * a), (-b + sqrt(d))/ (2 * a)]
+    else :
+        return [f"{-b / (2 * a)} - {sqrt(d)/ (2 * a)}i", f"{-b / (2 * a)} + {sqrt(d)/ (2 * a)}i"]
+        

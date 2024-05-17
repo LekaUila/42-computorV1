@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 13:34:57 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/14 18:59:48 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/17 16:33:19 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -280,29 +280,29 @@ class operation:
             nbModif = 42
             while nbModif > 0:
                 nbModif = this.selfOptiSign()
-                print(f"OS  : {this}")
+                # print(f"OS  : {this}")
                 nbGlobalModif += nbModif
             nbModif = 42
             while nbModif > 0:
                 nbModif = this.selfOptiNumberAndNumber()
-                print(f"ONaN: {this}")
+                # print(f"ONaN: {this}")
                 nbGlobalModif += nbModif
             nbModif = 42
             while nbModif > 0:
                 nbModif = this.selfOptiNumberAndOperation()
-                print(f"ONaO: {this}")
+                # print(f"ONaO: {this}")
                 nbModif += this.selfOptiVariableAndOperation()
-                print(f"OVaO: {this}")
+                # print(f"OVaO: {this}")
                 nbModif += this.selfOptiOperationAndOperation()
-                print(f"OOaO: {this}")
+                # print(f"OOaO: {this}")
                 nbModif += this.selfOptiNumberAndVariable()
-                print(f"ONaV: {this}")
+                # print(f"ONaV: {this}")
                 nbModif += this.destroyParenthese()
-                print(f"DP  : {this}")
+                # print(f"DP  : {this}")
                 this.setFormat()
-                print(f"SF  : {this}")
+                # print(f"SF  : {this}")
                 this.simplify()
-                print(f"SIMP: {this}")
+                # print(f"SIMP: {this}")
                 nbGlobalModif += nbModif
             
     def checkVariableForEquation(this):
@@ -475,8 +475,6 @@ class operation:
         return modifNb
 
     def simplify(this):
-        # TODO : continue fonction
-        # simplifie division with factor
         opera = this
         degre = 0
         modifNb = 0
@@ -732,8 +730,7 @@ class operation:
                 degre = 1
             else :
                 degre = 0
-            if result == None :
-                opera = opera.right
+            opera = opera.right
         return modifNb
     
     def __mul__(this, mult):
@@ -819,13 +816,30 @@ class operation:
         return returnValue
 
     def hasPower(this):
-        #TODO : create this
-        return
+        opera = this
+        while opera != None :
+            if (opera.operator == "^" and (type(opera.right.left) == operation or type(opera.right.left) == str)):
+                return True
+            opera = opera.right
+        return False
     
     def hasDivision(this):
-        #TODO : create this
-        return
+        opera = this
+        while opera != None :
+            if (opera.operator == "/" and (type(opera.right.left) == operation or type(opera.right.left) == str)):
+                return operation(opera.right.left.__str__())
+            opera = opera.right
+        return None
     
+    def replaceVariableBy(this,V, nb):
+        opera = this
+        while opera != None :
+            if type(opera.left) == operation:
+                opera.left.selfOptiNumberAndNumber()
+            elif type(opera.left) == str and opera.left == V:
+                opera.left = nb
+            opera = opera.right
+
     def power(this, flt):
         if (flt - float(int(flt)) != 0.0):
             print(f"WARNING : find {flt} as exponent (can only have integer exponent) -> {flt} will be considert as {int(flt)}")
