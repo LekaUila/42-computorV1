@@ -6,7 +6,7 @@
 #    By: lflandri <liam.flandrinck.58@gmail.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/23 20:35:34 by lflandri          #+#    #+#              #
-#    Updated: 2024/05/17 15:59:23 by lflandri         ###   ########.fr        #
+#    Updated: 2024/05/31 12:22:55 by lflandri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,6 +32,8 @@ def power(flt1, flt2) -> float:
 def sqrt(n):
     i = 0
     result = 1
+    if n == 0.0:
+        return 0.0
     while i < 50:
         result = (result + (n / result)) / 2
         i+=1
